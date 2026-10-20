@@ -1,0 +1,122 @@
+USE learning_path_db;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL DEFAULT 'USER',
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+);
+
+CREATE TABLE IF NOT EXISTS user_profiles (
+  user_id BIGINT PRIMARY KEY,
+  domain VARCHAR(100),
+  career_goal VARCHAR(200),
+  experience_level VARCHAR(30),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS skills (
+  id BIGINT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  domain VARCHAR(100) NOT NULL,
+  difficulty INT NOT NULL,
+  prerequisite_skill_id BIGINT NULL,
+  FOREIGN KEY (prerequisite_skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_skills (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  skill_id BIGINT NOT NULL,
+  proficiency_score DOUBLE NOT NULL,
+  UNIQUE (user_id, skill_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS questions (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  skill_id BIGINT NOT NULL,
+  question_text VARCHAR(500) NOT NULL,
+  options VARCHAR(1000) NOT NULL,
+  correct_index INT NOT NULL,
+  FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS assessment_results (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  skill_id BIGINT NOT NULL,
+  score DOUBLE NOT NULL,
+  taken_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS learning_paths (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  career_goal VARCHAR(200),
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS path_steps (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  path_id BIGINT NOT NULL,
+  step_order INT NOT NULL,
+  skill_id BIGINT NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'NOT_STARTED',
+  FOREIGN KEY (path_id) REFERENCES learning_paths(id) ON DELETE CASCADE,
+  FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS resources (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(300) NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  url VARCHAR(500) NOT NULL UNIQUE,
+  skill_id BIGINT NOT NULL,
+  source VARCHAR(30),
+  rating DOUBLE,
+  tags VARCHAR(300),
+  FOREIGN KEY (skill_id) REFERENCES skills(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_progress (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  resource_id BIGINT NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  completed_at DATETIME(6),
+  UNIQUE (user_id, resource_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (resource_id) REFERENCES resources(id)
+);
+
+CREATE TABLE IF NOT EXISTS badges (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(50) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(300)
+);
+
+CREATE TABLE IF NOT EXISTS user_badges (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  badge_id BIGINT NOT NULL,
+  awarded_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UNIQUE (user_id, badge_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (badge_id) REFERENCES badges(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_stats (
+  user_id BIGINT PRIMARY KEY,
+  points INT NOT NULL DEFAULT 0,
+  streak_days INT NOT NULL DEFAULT 0,
+  last_active_date DATE NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
