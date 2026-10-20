@@ -1,0 +1,7 @@
+id,title,skill_id,difficulty,rating,tags
+1,MDN: Learn Web Development,1,1,4.8,html css web basics
+2,The Modern JavaScript Tutorial,2,2,4.9,javascript basics programming
+3,Pro Git Book,3,1,4.7,git github version control
+4,React: Learn,4,3,4.8,react components hooks javascript
+5,Python Official Tutorial,6,1,4.6,python basics programming
+6,pandas: Getting Started,8,2,4.5,pandas dataframes python data
