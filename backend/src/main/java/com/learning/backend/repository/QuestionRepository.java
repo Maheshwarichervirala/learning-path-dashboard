@@ -6,4 +6,5 @@ import java.util.*;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findBySkillId(Long skillId);
+    boolean existsBySkillId(Long skillId);
 }

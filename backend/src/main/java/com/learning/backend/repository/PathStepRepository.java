@@ -6,4 +6,5 @@ import java.util.*;
 
 public interface PathStepRepository extends JpaRepository<PathStep, Long> {
     List<PathStep> findByPathIdOrderByStepOrder(Long pathId);
+    boolean existsBySkillId(Long skillId);
 }

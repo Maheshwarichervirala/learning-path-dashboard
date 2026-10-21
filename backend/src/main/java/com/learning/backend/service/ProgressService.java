@@ -35,4 +35,38 @@ public class ProgressService {
         }
         return gamification.getStats(uid);
     }
+
+    @Transactional
+    public com.learning.backend.dto.Dtos.ProgressStateView updateStatus(Long resourceId, String status) {
+        Long uid = current.id();
+        if (!resources.existsById(resourceId)) throw new NoSuchElementException("Resource not found");
+        String normStatus = status.trim().toUpperCase();
+        if (!java.util.Set.of("SAVED", "IN_PROGRESS", "COMPLETED").contains(normStatus)) {
+            throw new IllegalArgumentException("Status must be one of SAVED, IN_PROGRESS, COMPLETED");
+        }
+
+        UserProgress up = progress.findByUserIdAndResourceId(uid, resourceId)
+                .orElseGet(() -> UserProgress.builder().userId(uid).resourceId(resourceId).build());
+
+        boolean wasCompleted = "COMPLETED".equals(up.getStatus());
+        up.setStatus(normStatus);
+
+        if ("COMPLETED".equals(normStatus)) {
+            if (!wasCompleted) {
+                up.setCompletedAt(LocalDateTime.now());
+                gamification.awardPoints(uid, 20);
+                gamification.touchStreak(uid);
+                gamification.checkBadges(uid, null);
+            }
+        }
+        progress.save(up);
+        return new com.learning.backend.dto.Dtos.ProgressStateView(up.getResourceId(), up.getStatus(), up.getCompletedAt());
+    }
+
+    public java.util.List<com.learning.backend.dto.Dtos.ProgressStateView> getMine() {
+        Long uid = current.id();
+        return progress.findByUserId(uid).stream()
+                .map(p -> new com.learning.backend.dto.Dtos.ProgressStateView(p.getResourceId(), p.getStatus(), p.getCompletedAt()))
+                .toList();
+    }
 }

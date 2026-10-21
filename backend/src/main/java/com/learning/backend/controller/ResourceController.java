@@ -15,7 +15,9 @@ public class ResourceController {
     private final ExternalResourceService external;
 
     @GetMapping("/api/resources")
-    public List<Resource> bySkill(@RequestParam Long skillId) { return resources.bySkill(skillId); }
+    public List<Resource> bySkill(@RequestParam(required = false) Long skillId) {
+        return skillId == null ? resources.all() : resources.bySkill(skillId);
+    }
 
     @GetMapping("/api/recommendations")
     public List<Resource> recommendations() { return resources.recommend(); }

@@ -16,6 +16,9 @@ public class AssessmentController {
     @GetMapping("/{skillId}")
     public List<QuestionView> questions(@PathVariable Long skillId) { return assessments.getQuestions(skillId); }
 
+    @GetMapping("/history")
+    public List<AttemptHistoryView> history(@RequestParam Long skillId) { return assessments.getHistory(skillId); }
+
     @PostMapping("/submit")
     public SubmitResponse submit(@Valid @RequestBody SubmitRequest r) { return assessments.submit(r); }
 }

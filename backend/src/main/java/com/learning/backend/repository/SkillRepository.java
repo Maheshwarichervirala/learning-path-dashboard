@@ -8,4 +8,5 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
     List<Skill> findByDomain(String domain);
     @Query("select distinct s.domain from Skill s order by s.domain")
     List<String> findDomains();
+    boolean existsByPrerequisiteSkillId(Long prerequisiteSkillId);
 }

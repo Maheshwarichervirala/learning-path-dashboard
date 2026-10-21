@@ -1,7 +1,29 @@
 id,title,skill_id,difficulty,rating,tags
-1,MDN: Learn Web Development,1,1,4.8,html css web basics
-2,The Modern JavaScript Tutorial,2,2,4.9,javascript basics programming
-3,Pro Git Book,3,1,4.7,git github version control
-4,React: Learn,4,3,4.8,react components hooks javascript
-5,Python Official Tutorial,6,1,4.6,python basics programming
-6,pandas: Getting Started,8,2,4.5,pandas dataframes python data
+1,MDN: Learn Web Development,1,1,4.8,html css web
+2,The Modern JavaScript Tutorial,2,2,4.9,javascript basics
+3,Pro Git Book,3,1,4.7,git github
+4,React: Learn,4,3,4.8,react components hooks
+5,Python Official Tutorial,6,1,4.6,python basics
+6,pandas: Getting Started,8,2,4.5,pandas dataframes
+7,A Complete Guide to Flexbox,1,1,4.8,css flexbox layout html
+8,MDN JavaScript Guide,2,2,4.8,javascript guide programming
+9,GitHub Skills,3,1,4.6,git github practice
+10,Tutorial: Tic-Tac-Toe in React,4,3,4.7,react components state javascript
+11,Project-Based Learning,4,3,4.5,projects react javascript practice
+12,An Overview of HTTP,5,3,4.7,http rest api web
+13,REST API Tutorial,5,3,4.4,rest api design json
+14,W3Schools Python Tutorial,6,1,4.3,python basics programming
+15,Khan Academy: Statistics and Probability,7,2,4.8,statistics probability data
+16,Data Science for Beginners,7,2,4.7,data science statistics python
+17,10 Minutes to pandas,8,2,4.6,pandas dataframes python data
+18,scikit-learn User Guide,9,3,4.7,machine learning scikit-learn python
+19,Machine Learning Crash Course,9,3,4.8,machine learning models training
+20,Node.js Learn,10,3,4.6,node javascript server npm
+21,Dev.java Learn,11,1,4.7,java basics programming
+22,Object-Oriented Programming Concepts,12,2,4.5,java oop classes objects
+23,MySQL Tutorial,13,2,4.4,sql mysql database queries
+24,W3Schools SQL Tutorial,13,2,4.3,sql database select
+25,Building an Application with Spring Boot,14,3,4.6,spring boot java rest
+26,Spring Quickstart,14,3,4.5,spring boot java setup
+27,Matplotlib Tutorials,15,2,4.5,visualization matplotlib python charts
+28,Chart.js Documentation,15,2,4.6,charts javascript visualization

@@ -7,4 +7,5 @@ import java.util.*;
 public interface UserSkillRepository extends JpaRepository<UserSkill, Long> {
     List<UserSkill> findByUserId(Long userId);
     Optional<UserSkill> findByUserIdAndSkillId(Long userId, Long skillId);
+    boolean existsBySkillId(Long skillId);
 }

@@ -15,4 +15,14 @@ public class ProgressController {
 
     @PostMapping("/complete")
     public UserStats complete(@Valid @RequestBody CompleteRequest r) { return progress.complete(r.resourceId()); }
+
+    @PostMapping("/status")
+    public com.learning.backend.dto.Dtos.ProgressStateView updateStatus(@Valid @RequestBody com.learning.backend.dto.Dtos.ProgressStatusRequest r) {
+        return progress.updateStatus(r.resourceId(), r.status());
+    }
+
+    @GetMapping("/mine")
+    public java.util.List<com.learning.backend.dto.Dtos.ProgressStateView> mine() {
+        return progress.getMine();
+    }
 }
