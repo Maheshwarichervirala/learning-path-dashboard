@@ -219,27 +219,21 @@ export default function Dashboard() {
     <div className="dashboard-page">
       {/* Evening Reminder Banner for Unmet Goal after 6 PM */}
       {showEveningReminder && (
-        <div
-          className="card"
-          style={{
-            background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), var(--bg-surface))",
-            borderColor: "rgba(245, 158, 11, 0.4)",
-            padding: "14px 20px",
-            marginBottom: "20px",
-          }}
-        >
-          <div className="row between wrap" style={{ gap: "10px", alignItems: "center" }}>
-            <div className="row" style={{ gap: "10px", alignItems: "center" }}>
-              <Bell size={20} className="text-warning" style={{ color: "#f59e0b" }} />
-              <div>
-                <strong style={{ display: "block" }}>Evening Learning Reminder</strong>
-                <span className="muted" style={{ fontSize: "0.85rem" }}>
-                  It&apos;s past 6 PM and you have completed <strong>{goal.completedToday}</strong> of{" "}
-                  <strong>{goal.target}</strong> resource{goal.target > 1 ? "s" : ""} today. Keep your streak alive!
-                </span>
-              </div>
+        <div className="card reminder-banner-card">
+          <div className="reminder-banner-content">
+            <div className="reminder-banner-icon-box">
+              <Bell size={20} />
             </div>
-            <Link to="/recommendations" className="btn btn-primary btn-sm row-btn">
+            <div className="reminder-banner-text">
+              <strong className="reminder-banner-title">Evening Learning Reminder</strong>
+              <p className="reminder-banner-desc">
+                It&apos;s past 6 PM and you have completed <strong>{goal.completedToday}</strong> of{" "}
+                <strong>{goal.target}</strong> resource{goal.target > 1 ? "s" : ""} today. Keep your streak alive!
+              </p>
+            </div>
+          </div>
+          <div className="reminder-banner-actions">
+            <Link to="/recommendations" className="btn btn-primary btn-sm reminder-action-btn">
               <span>Finish Daily Goal</span>
               <ArrowRight size={14} />
             </Link>
@@ -305,101 +299,108 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Top Grid: Daily Goal & Metric Stat Cards */}
-      <div
-        className="dashboard-top-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "20px",
-          marginBottom: "24px",
-        }}
-      >
-        {/* Daily Goal Card with Circular Progress Ring */}
-        <div className="card stat-card" style={{ padding: "20px", display: "flex", gap: "18px" }}>
-          <div style={{ position: "relative", width: "90px", height: "90px", flexShrink: 0 }}>
-            <svg width="90" height="90" viewBox="0 0 90 90">
-              <circle
-                cx="45"
-                cy="45"
-                r={ringRadius}
-                fill="none"
-                stroke="var(--bg-muted)"
-                strokeWidth="7"
-              />
-              <circle
-                cx="45"
-                cy="45"
-                r={ringRadius}
-                fill="none"
-                stroke={goal.met ? "var(--success)" : "var(--primary)"}
-                strokeWidth="7"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                transform="rotate(-90 45 45)"
-                style={{ transition: "stroke-dashoffset 0.5s ease" }}
-              />
-            </svg>
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                {goal.completedToday}/{goal.target}
+      {/* Top Grid: Rebalanced 4-Card Unified Grid */}
+      <div className="dashboard-top-grid">
+        {/* Card 1: Daily Goal Card with Circular Progress Ring */}
+        <div className="card stat-card goal-stat-card" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "12px", justifyContent: "space-between" }}>
+          <div className="row between" style={{ alignItems: "center", width: "100%" }}>
+            <span className="stat-label">Daily Goal</span>
+            {goal.met ? (
+              <span className="badge-pill" style={{ background: "var(--success-light)", color: "var(--success)", border: "1px solid var(--success-border)", fontSize: "0.72rem" }}>
+                ✓ Goal Met
               </span>
-              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", textTransform: "uppercase" }}>
-                Today
+            ) : (
+              <span className="badge-pill" style={{ fontSize: "0.72rem", background: "var(--primary-light)", color: "var(--primary)", border: "1px solid var(--primary-border)" }}>
+                In Progress
               </span>
-            </div>
+            )}
           </div>
 
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div className="row between" style={{ alignItems: "center", marginBottom: "4px" }}>
-              <span className="stat-label">Daily Goal</span>
-              {goal.met ? (
-                <span className="badge-pill" style={{ background: "var(--success-light)", color: "var(--success)", fontSize: "0.72rem" }}>
-                  ✓ Goal Met
+          <div className="row" style={{ alignItems: "center", gap: "16px" }}>
+            <div style={{ position: "relative", width: "76px", height: "76px", flexShrink: 0 }}>
+              <svg width="76" height="76" viewBox="0 0 90 90">
+                <defs>
+                  <linearGradient id="goalProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#4f46e5" />
+                  </linearGradient>
+                  <linearGradient id="goalSuccessGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#34d399" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+                  <filter id="ringGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={goal.met ? "rgba(16, 185, 129, 0.4)" : "rgba(99, 102, 241, 0.4)"} />
+                  </filter>
+                </defs>
+                <circle
+                  cx="45"
+                  cy="45"
+                  r={ringRadius}
+                  fill="none"
+                  stroke="var(--bg-muted)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="45"
+                  cy="45"
+                  r={ringRadius}
+                  fill="none"
+                  stroke={goal.met ? "url(#goalSuccessGrad)" : "url(#goalProgressGrad)"}
+                  strokeWidth="8"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  filter="url(#ringGlow)"
+                  transform="rotate(-90 45 45)"
+                  style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)" }}
+                />
+              </svg>
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                  {goal.completedToday}/{goal.target}
                 </span>
-              ) : (
-                <span className="badge-pill" style={{ fontSize: "0.72rem" }}>
-                  In Progress
+                <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+                  Today
                 </span>
-              )}
+              </div>
             </div>
 
-            <p className="muted" style={{ fontSize: "0.82rem", margin: "4px 0 10px" }}>
-              Target: <strong>{goal.target}</strong> resource{goal.target > 1 ? "s" : ""}/day
-            </p>
-
-            <div className="row" style={{ gap: "4px", alignItems: "center" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginRight: "4px" }}>Adjust:</span>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <button
-                  key={num}
-                  type="button"
-                  disabled={updatingGoal}
-                  onClick={() => handleTargetChange(num)}
-                  className={`btn btn-sm ${goal.target === num ? "btn-primary" : "btn-secondary"}`}
-                  style={{ padding: "2px 8px", fontSize: "0.75rem", minWidth: "26px" }}
-                >
-                  {num}
-                </button>
-              ))}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="muted" style={{ fontSize: "0.8rem", margin: "0 0 6px" }}>
+                Target: <strong>{goal.target}</strong> resource{goal.target > 1 ? "s" : ""}
+              </p>
+              <div className="row" style={{ gap: "3px", alignItems: "center" }}>
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginRight: "2px" }}>Set:</span>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    disabled={updatingGoal}
+                    onClick={() => handleTargetChange(num)}
+                    className={`btn btn-sm ${goal.target === num ? "btn-primary" : "btn-secondary"}`}
+                    style={{ padding: "1px 6px", fontSize: "0.72rem", minWidth: "22px", height: "22px" }}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Total Points */}
-        <div className="stat-card">
+        {/* Card 2: Total Points */}
+        <div className="card stat-card" style={{ padding: "18px 20px" }}>
           <div className="stat-icon-wrapper flame-bg">
-            <Flame size={22} className="stat-icon flame" />
+            <Flame size={24} className="stat-icon flame" />
           </div>
           <div className="stat-content">
             <span className="stat-label">Total Points</span>
@@ -407,10 +408,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Streak */}
-        <div className="stat-card">
+        {/* Card 3: Streak */}
+        <div className="card stat-card" style={{ padding: "18px 20px" }}>
           <div className="stat-icon-wrapper streak-bg">
-            <Sparkles size={22} className="stat-icon streak" />
+            <Sparkles size={24} className="stat-icon streak" />
           </div>
           <div className="stat-content">
             <span className="stat-label">Day Streak</span>
@@ -420,10 +421,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Resources Done */}
-        <div className="stat-card">
+        {/* Card 4: Resources Done */}
+        <div className="card stat-card" style={{ padding: "18px 20px" }}>
           <div className="stat-icon-wrapper completed-bg">
-            <CheckCircle2 size={22} className="stat-icon completed" />
+            <CheckCircle2 size={24} className="stat-icon completed" />
           </div>
           <div className="stat-content">
             <span className="stat-label">Resources Done</span>

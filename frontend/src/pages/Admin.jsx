@@ -446,7 +446,7 @@ export default function Admin() {
           </div>
 
           <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-            <table className="leaderboard-table" style={{ width: "100%" }}>
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -460,19 +460,19 @@ export default function Admin() {
               <tbody>
                 {filteredSkills.map((s) => (
                   <tr key={s.id}>
-                    <td>
+                    <td data-label="ID">
                       <code>#{s.id}</code>
                     </td>
-                    <td>
+                    <td data-label="Name">
                       <strong>{s.name}</strong>
                     </td>
-                    <td>
+                    <td data-label="Domain">
                       <span className="chip" style={{ fontSize: "0.75rem" }}>
                         {s.domain}
                       </span>
                     </td>
-                    <td>Level {s.difficulty}</td>
-                    <td>
+                    <td data-label="Difficulty">Level {s.difficulty}</td>
+                    <td data-label="Prerequisite">
                       {s.prerequisiteSkillId ? (
                         <span className="muted" style={{ fontSize: "0.82rem" }}>
                           #{s.prerequisiteSkillId} ({skillNameById[s.prerequisiteSkillId] || "Skill"})
@@ -483,7 +483,7 @@ export default function Admin() {
                         </span>
                       )}
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    <td data-label="Actions" style={{ textAlign: "right" }}>
                       <div className="row" style={{ justifyContent: "flex-end", gap: "6px" }}>
                         <button
                           type="button"
@@ -544,7 +544,7 @@ export default function Admin() {
           </div>
 
           <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-            <table className="leaderboard-table" style={{ width: "100%" }}>
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -559,16 +559,16 @@ export default function Admin() {
                   const opts = q.options.split("|");
                   return (
                     <tr key={q.id}>
-                      <td>
+                      <td data-label="ID">
                         <code>#{q.id}</code>
                       </td>
-                      <td>
+                      <td data-label="Skill">
                         <span className="chip" style={{ fontSize: "0.75rem" }}>
                           {skillNameById[q.skillId] || `Skill #${q.skillId}`}
                         </span>
                       </td>
-                      <td style={{ maxWidth: "340px" }}>{q.questionText}</td>
-                      <td>
+                      <td data-label="Question" style={{ maxWidth: "340px" }}>{q.questionText}</td>
+                      <td data-label="Options">
                         <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
                           {opts.map((opt, oi) => (
                             <span
@@ -581,7 +581,7 @@ export default function Admin() {
                           ))}
                         </div>
                       </td>
-                      <td style={{ textAlign: "right" }}>
+                      <td data-label="Actions" style={{ textAlign: "right" }}>
                         <div className="row" style={{ justifyContent: "flex-end", gap: "6px" }}>
                           <button
                             type="button"
@@ -632,7 +632,7 @@ export default function Admin() {
           </div>
 
           <div className="card" style={{ padding: 0, overflowX: "auto" }}>
-            <table className="leaderboard-table" style={{ width: "100%" }}>
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -646,27 +646,27 @@ export default function Admin() {
               <tbody>
                 {filteredResources.map((r) => (
                   <tr key={r.id}>
-                    <td>
+                    <td data-label="ID">
                       <code>#{r.id}</code>
                     </td>
-                    <td>
+                    <td data-label="Title">
                       <strong>{r.title}</strong>
                       <div className="muted" style={{ fontSize: "0.75rem" }}>
                         {r.source || "Web"} • {r.url}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Type">
                       <span className={`chip type-badge badge-${(r.type || "other").toLowerCase()}`}>
                         {r.type}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Skill">
                       <span className="chip" style={{ fontSize: "0.75rem" }}>
                         {skillNameById[r.skillId] || `Skill #${r.skillId}`}
                       </span>
                     </td>
-                    <td>★ {r.rating ? r.rating.toFixed(1) : "—"}</td>
-                    <td style={{ textAlign: "right" }}>
+                    <td data-label="Rating">★ {r.rating ? r.rating.toFixed(1) : "—"}</td>
+                    <td data-label="Actions" style={{ textAlign: "right" }}>
                       <div className="row" style={{ justifyContent: "flex-end", gap: "6px" }}>
                         <button
                           type="button"

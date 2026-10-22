@@ -276,6 +276,36 @@ export default function SkillTree() {
             aria-label="Skill prerequisite graph"
           >
             <defs>
+              {/* Background Matrix Pattern */}
+              <pattern id="tree-grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1.2" fill="var(--border)" opacity="0.4" />
+              </pattern>
+
+              {/* Edge Gradients */}
+              <linearGradient id="edge-in-path" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#818cf8" />
+                <stop offset="100%" stopColor="#4f46e5" />
+              </linearGradient>
+              <linearGradient id="edge-completed" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+
+              {/* Node Glow Filters */}
+              <filter id="node-glow-completed" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(16, 185, 129, 0.3)" />
+              </filter>
+              <filter id="node-glow-inpath" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(99, 102, 241, 0.35)" />
+              </filter>
+              <filter id="node-glow-available" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(99, 102, 241, 0.25)" />
+              </filter>
+              <filter id="node-glow-selected" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="rgba(99, 102, 241, 0.6)" />
+              </filter>
+
+              {/* Arrow Markers */}
               <marker
                 id="arrow-default"
                 viewBox="0 0 10 10"
@@ -296,7 +326,7 @@ export default function SkillTree() {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--primary)" />
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5" />
               </marker>
               <marker
                 id="arrow-completed"
@@ -307,9 +337,12 @@ export default function SkillTree() {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--success)" />
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
               </marker>
             </defs>
+
+            {/* Background Grid */}
+            <rect width={layout.width} height={layout.height} fill="url(#tree-grid)" />
 
             {/* Connecting Edges */}
             {layout.edges.map((edge, idx) => {
@@ -323,13 +356,14 @@ export default function SkillTree() {
                   fill="none"
                   stroke={
                     isComp
-                      ? "var(--success)"
+                      ? "url(#edge-completed)"
                       : isInPath
-                      ? "var(--primary)"
+                      ? "url(#edge-in-path)"
                       : "var(--border)"
                   }
-                  strokeWidth={isComp || isInPath ? 2.5 : 1.5}
-                  strokeDasharray={edge.state === "locked" ? "4,4" : "none"}
+                  strokeWidth={isComp || isInPath ? 3 : 1.75}
+                  strokeLinecap="round"
+                  strokeDasharray={edge.state === "locked" ? "5,5" : "none"}
                   markerEnd={
                     isComp
                       ? "url(#arrow-completed)"
@@ -337,7 +371,11 @@ export default function SkillTree() {
                       ? "url(#arrow-active)"
                       : "url(#arrow-default)"
                   }
-                  style={{ opacity: edge.state === "locked" ? 0.45 : 0.85 }}
+                  style={{
+                    opacity: edge.state === "locked" ? 0.45 : 0.95,
+                    filter: isComp || isInPath ? "drop-shadow(0 2px 4px rgba(99, 102, 241, 0.25))" : "none",
+                    transition: "all 0.3s ease",
+                  }}
                 />
               );
             })}
@@ -349,21 +387,58 @@ export default function SkillTree() {
               const step = stepBySkillId[s.id];
               const prof = step ? Math.round(step.proficiency) : 0;
 
-              let strokeColor = "var(--border)";
-              let bgColor = "var(--bg-surface)";
+              let strokeColor = "var(--glass-border)";
+              let bgColor = "var(--bg-card)";
               let textColor = "var(--text-primary)";
+              let filter = "none";
 
-              if (state === "completed") {
+              if (isSelected) {
+                strokeColor = "var(--primary)";
+                filter = "url(#node-glow-selected)";
+              } else if (state === "completed") {
                 strokeColor = "var(--success)";
-                bgColor = "var(--success-light)";
+                bgColor = "var(--bg-surface)";
+                filter = "url(#node-glow-completed)";
               } else if (state === "in_path") {
                 strokeColor = "var(--primary)";
-                bgColor = "var(--primary-light)";
+                bgColor = "var(--bg-surface)";
+                filter = "url(#node-glow-inpath)";
+              } else if (state === "available") {
+                strokeColor = "rgba(99, 102, 241, 0.6)";
+                bgColor = "var(--bg-surface)";
+                filter = "url(#node-glow-available)";
               } else if (state === "locked") {
-                strokeColor = "var(--border)";
+                strokeColor = "var(--border-subtle)";
                 bgColor = "var(--bg-muted)";
                 textColor = "var(--text-muted)";
               }
+
+              const statusBadgeText =
+                state === "completed"
+                  ? "Completed"
+                  : state === "in_path"
+                  ? "In Path"
+                  : state === "locked"
+                  ? "Locked"
+                  : "Ready";
+
+              const badgeBg =
+                state === "completed"
+                  ? "var(--success-light)"
+                  : state === "in_path"
+                  ? "var(--primary-light)"
+                  : state === "available"
+                  ? "rgba(99, 102, 241, 0.15)"
+                  : "var(--bg-muted)";
+
+              const badgeColor =
+                state === "completed"
+                  ? "var(--success)"
+                  : state === "in_path"
+                  ? "var(--primary)"
+                  : state === "available"
+                  ? "var(--primary)"
+                  : "var(--text-muted)";
 
               return (
                 <g
@@ -381,73 +456,85 @@ export default function SkillTree() {
                   <rect
                     width={layout.nodeWidth}
                     height={layout.nodeHeight}
-                    rx="12"
-                    ry="12"
+                    rx="14"
+                    ry="14"
                     fill={bgColor}
                     stroke={strokeColor}
-                    strokeWidth={isSelected ? 3 : 1.5}
+                    strokeWidth={isSelected ? 2.5 : 1.5}
                     style={{
-                      filter: isSelected ? "drop-shadow(0 4px 12px rgba(99, 102, 241, 0.35))" : "none",
-                      transition: "all 0.2s ease",
+                      filter,
+                      transition: "all 0.25s ease",
                     }}
                   />
 
-                  {/* Header / State Icon */}
-                  <g transform="translate(14, 20)">
-                    {state === "completed" && (
-                      <circle cx="6" cy="6" r="6" fill="var(--success)" />
-                    )}
-                    {state === "in_path" && (
-                      <circle cx="6" cy="6" r="6" fill="var(--primary)" />
-                    )}
-                    {state === "locked" && (
-                      <circle cx="6" cy="6" r="6" fill="#9ca3af" />
-                    )}
-                  </g>
-
-                  {/* Node Title */}
+                  {/* Header: Skill Name */}
                   <text
-                    x="34"
-                    y="24"
+                    x="16"
+                    y="26"
                     fill={textColor}
                     fontSize="13"
                     fontWeight="700"
                     style={{ userSelect: "none" }}
                   >
-                    {s.name.length > 17 ? s.name.substring(0, 16) + "…" : s.name}
+                    {s.name.length > 18 ? s.name.substring(0, 17) + "…" : s.name}
                   </text>
 
-                  {/* Level & Status Subtitle */}
-                  <text
-                    x="14"
-                    y="50"
-                    fill="var(--text-secondary)"
-                    fontSize="11"
-                    fontWeight="500"
-                    style={{ userSelect: "none" }}
-                  >
-                    Level {s.difficulty} •{" "}
-                    {state === "completed"
-                      ? "Mastered"
-                      : state === "in_path"
-                      ? "In Roadmap"
-                      : state === "locked"
-                      ? "Prerequisite Locked"
-                      : "Ready"}
-                  </text>
+                  {/* Level Pill */}
+                  <g transform="translate(16, 36)">
+                    <rect
+                      width="50"
+                      height="18"
+                      rx="9"
+                      fill="var(--bg-muted)"
+                      stroke="var(--border)"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x="25"
+                      y="13"
+                      textAnchor="middle"
+                      fill="var(--text-secondary)"
+                      fontSize="9.5"
+                      fontWeight="600"
+                    >
+                      Level {s.difficulty}
+                    </text>
+                  </g>
+
+                  {/* Status Badge Pill */}
+                  <g transform="translate(72, 36)">
+                    <rect
+                      width="70"
+                      height="18"
+                      rx="9"
+                      fill={badgeBg}
+                      stroke={state === "completed" ? "var(--success-border)" : state === "in_path" ? "var(--primary-border)" : "transparent"}
+                      strokeWidth="1"
+                    />
+                    <text
+                      x="35"
+                      y="13"
+                      textAnchor="middle"
+                      fill={badgeColor}
+                      fontSize="9.5"
+                      fontWeight="700"
+                    >
+                      {statusBadgeText}
+                    </text>
+                  </g>
 
                   {/* Proficiency Mini Bar */}
-                  {prof > 0 && (
-                    <g transform="translate(14, 62)">
-                      <rect width="162" height="4" rx="2" fill="var(--bg-muted)" />
+                  <g transform="translate(16, 66)">
+                    <rect width="158" height="5" rx="2.5" fill="var(--bg-muted)" />
+                    {prof > 0 && (
                       <rect
-                        width={Math.min(162, (162 * prof) / 100)}
-                        height="4"
-                        rx="2"
+                        width={Math.min(158, (158 * prof) / 100)}
+                        height="5"
+                        rx="2.5"
                         fill={prof >= 70 ? "var(--success)" : "var(--primary)"}
                       />
-                    </g>
-                  )}
+                    )}
+                  </g>
                 </g>
               );
             })}
