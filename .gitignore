@@ -21,3 +21,10 @@ application-local.properties
 .pytest_cache/
 ml-service/reports/eval_2*.json
 ml-service/reports/confusion_matrix_2*.png
+
+*.pem
+*.key
+screenshots/
+scratch/
+.vscode/
+.env.*
