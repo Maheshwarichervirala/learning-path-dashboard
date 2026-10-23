@@ -1,168 +1,116 @@
 # Adaptive Learning Path Dashboard
 
-An intelligent, full-stack personalized learning accelerator designed to guide developers through skill prerequisites, interactive assessments, adaptive recommendations, and gamified mastery.
+A full-stack learning platform that assesses a learner's skill level, builds a prerequisite-ordered learning path, recommends resources, and tracks progress with points, streaks and badges.
 
----
-
-## Architecture Overview
+## Architecture
 
 ```
-                      ┌────────────────────────────────────────┐
-                      │          React 18 Frontend             │
-                      │  (Vite + Glassmorphism UI + Lucide)   │
-                      │         http://localhost:5173          │
-                      └──────────────────┬─────────────────────┘
-                                         │ REST API + JWT
-                                         ▼
-                      ┌────────────────────────────────────────┐
-                      │       Spring Boot 4.1.1 Backend        │
-                      │  (Java 25 + Spring Security + JPA)     │
-                      │         http://localhost:8080          │
-                      └─────────────┬──────────────────┬───────┘
-                                    │                  │
-                JPA / Hibernate     │                  │  HTTP Recommendations
-                                    ▼                  ▼
-       ┌───────────────────────────────┐    ┌───────────────────────────────────┐
-       │         MySQL 8 Database      │    │       FastAPI ML Microservice     │
-       │       `learning_path_db`      │    │  (Python 3.13 + TF-IDF + Sklearn) │
-       │      localhost:3306 (TCP)     │    │       http://localhost:8000       │
-       └───────────────────────────────┘    └───────────────────────────────────┘
+React frontend (5173)  ->  Spring Boot backend (8080)  ->  MySQL (3306)
+                                      |
+                                      +-->  FastAPI ML service (8000)
 ```
 
----
+## Tech stack
 
-## Tech Stack
-
-- **Frontend**: React 18, Vite, React Router 6, Chart.js / `react-chartjs-2`, Lucide Icons, Vanilla CSS Glassmorphism system with high-contrast Dark & Light mode tokens.
-- **Backend**: Spring Boot 4.1.1, Java 25, Spring Security 6 with stateless JWT authentication, Hibernate ORM, MySQL Connector/J.
-- **ML Engine**: Python 3.13, FastAPI, Uvicorn, scikit-learn, TF-IDF vectorizer and cosine similarity recommendation ranking.
-- **Database**: MySQL 8.0+.
-
----
+- **Frontend:** React 19, Vite, React Router, Chart.js, Lucide icons, plain CSS (glassmorphism-style surfaces, light and dark themes)
+- **Backend:** Spring Boot 4, Java, Spring Security with stateless JWT, JPA/Hibernate
+- **ML service:** Python, FastAPI, scikit-learn, pandas
+- **Database:** MySQL 8
 
 ## Prerequisites
 
-Before starting the application, ensure you have the following installed:
+Java 17+, Node.js 18+, Python 3.10+, MySQL 8 running on port 3306.
 
-1. **Java JDK 17+** (JDK 25 recommended): `java -version`
-2. **Node.js 18+** (Node 24 recommended): `node -v`
-3. **Python 3.10+** (Python 3.13 recommended): `python --version`
-4. **MySQL Server 8.0+**: Running on port `3306`
+## Setup
 
----
+### 1. Database
 
-## Database Configuration
+```sql
+CREATE DATABASE IF NOT EXISTS learning_path_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'lpd_user'@'localhost' IDENTIFIED BY '<choose-a-password>';
+GRANT ALL PRIVILEGES ON learning_path_db.* TO 'lpd_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-1. Create the MySQL database and user:
-   ```sql
-   CREATE DATABASE IF NOT EXISTS learning_path_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   CREATE USER IF NOT EXISTS 'lpd_user'@'localhost' IDENTIFIED BY 'StrongPassword@123';
-   GRANT ALL PRIVILEGES ON learning_path_db.* TO 'lpd_user'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
-2. The Spring Boot backend automatically verifies and populates tables with `schema.sql` and `data.sql` on startup.
+The backend validates the schema but does not create it. Run the SQL files in `database/` against `learning_path_db`: `schema.sql` first, then `seed.sql`, then the remaining files. If a file reports that a table or column already exists, skip it.
 
----
+### 2. Environment variables
 
-## How to Run
+| Variable | Purpose | Required |
+|---|---|---|
+| `DB_PASSWORD` | Password of the `lpd_user` MySQL account | Yes |
+| `JWT_SECRET` | Secret used to sign login tokens (set a long random value) | Recommended |
+| `CORS_ALLOWED_ORIGINS` | Allowed frontend origins (default: `http://localhost:5173,http://127.0.0.1:5173`) | No |
 
-### 1. Start the Spring Boot Backend
+PowerShell:
+
+```powershell
+$env:DB_PASSWORD = "<your-password>"
+```
+
+### 3. Backend
 
 ```bash
 cd backend
-./mvnw spring-boot:run
+./mvnw spring-boot:run        # Windows: .\mvnw.cmd spring-boot:run
 ```
-*On Windows PowerShell:*
-```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-- **Port**: `8080`
-- **Health Check**: `http://localhost:8080/api/health`
-- **CORS Allowed Origins**: Configured in `backend/src/main/resources/application.properties` via `cors.allowed-origins` (defaults to `http://localhost:5173,http://127.0.0.1:5173`).
 
-### 2. Start the ML Microservice
+Health check: http://localhost:8080/api/health
+
+### 4. ML service
 
 ```bash
 cd ml-service
 python -m venv venv
-# Activate virtual environment:
-# Linux/macOS:
-source venv/bin/activate
-# Windows PowerShell:
-.\venv\Scripts\Activate.ps1
-
+source venv/bin/activate      # Windows: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-uvicorn main:app --port 8000 --reload
+uvicorn main:app --port 8000
 ```
-- **Port**: `8000`
-- **Health Check**: `http://localhost:8000/docs`
 
-### 3. Start the Frontend Dev Server
+Health check: http://localhost:8000/health
+
+### 5. Frontend
 
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-- **Port**: `5173`
-- **Application URL**: `http://localhost:5173`
 
----
+Open http://localhost:5173 and create an account on the `/register` page. To make an account an administrator, change its `role` in the `users` table (check `database/seed.sql` for the exact admin role value).
 
-## Demo Credentials
+## Features
 
-The database comes pre-seeded with two demo user accounts:
+- Diagnostic assessments with a fixed question bank and difficulty adaptation
+- Learning path with prerequisite-ordered skills and an interactive skill tree
+- Resource recommendations, notes and ratings
+- Daily goals, points, streaks, badges and a leaderboard
+- PDF completion certificates
+- Admin console for skills, questions and resources, plus a Model Metrics tab for the ML service
 
-| Role | Email | Password | Access Level |
-|---|---|---|---|
-| **Administrator** | `test@example.com` | `Password@123` | Full access: Admin Console (`/admin`), curriculum management (Skills, Questions, Resources), and web import tools. |
-| **Learner** | `demo@example.com` | `Password@123` | Learner access: Personal Dashboard, Roadmap, Skill Tree, Assessments, Resource Notes, and Leaderboard. |
+## Machine learning
 
-> **Self-Registration**: New accounts can also be created via the `/register` page anytime.
+| Component | Method | Used for |
+|---|---|---|
+| Level classifier | Random Forest (scikit-learn) | Beginner / Intermediate / Advanced from average score, last score and quizzes taken |
+| Recommender | TF-IDF on resource tags + cosine similarity, blended with ratings | Ranking candidate resources |
+| Difficulty adaptation | Rule on the last three scores | Next quiz difficulty |
 
----
+**Limitations:** the level classifier is trained on synthetic data, and its labels are derived from the average score, so it does not outperform a simple score-threshold rule (about 91% accuracy for both on the synthetic test set). The recommender is evaluated on synthetic user interactions. Both need real learner data before their metrics can be trusted. The backend falls back to rule-based results if the ML service is unavailable.
 
-## Key Features & UI Polish
-
-1. **Dashboard Overview**:
-   - Rebalanced **4-card metric grid** (Daily Goal, Total Points, Day Streak, Completed Resources).
-   - Dynamic **SVG Progress Ring** with purple drop-shadow glow and animated progress arcs.
-   - Evening learning reminder banner that adapts and stacks on mobile screens.
-
-2. **Interactive Prerequisite Skill Tree**:
-   - Directed Acyclic Graph (DAG) layout with curved connecting vectors.
-   - Status indicators (`Ready`, `In Path`, `Completed`, `Locked`).
-   - SVG glow filters (`#node-glow-available`, `#node-glow-selected`, `#node-glow-completed`) for an engaging sci-fi node aesthetic.
-   - Interactive slide-over skill inspector drawer with quick resource launch.
-
-3. **Responsive Mobile Optimization**:
-   - Admin tables collapse into structured **card views** on screens `<= 768px` using CSS `data-label` pseudo-elements.
-   - Minimum **44px × 44px touch targets** for navigation links, drawer toggles, theme switchers, and action buttons.
-   - Responsive page headers that wrap cleanly without squeezing typography.
-
-4. **Accessibility (WCAG AA Compliant)**:
-   - High-contrast secondary and muted text (`#475569` in light mode, `#94a3b8` in dark mode) yielding > 6.5:1 contrast ratios.
-   - Visible focus indicators (`:focus-visible`) with 2px accent outlines and offset halos.
-   - Micro-interaction active feedback (`scale(0.97)` press effect).
-
-5. **Externalized Security & CORS**:
-   - Configurable origins via `cors.allowed-origins` in `application.properties` or environment variable `CORS_ALLOWED_ORIGINS`.
-
----
-
-## Running Automated Tests
-
-To run the Maven test suite on the backend:
+To regenerate the evaluation report:
 
 ```bash
-cd backend
-./mvnw test
-```
-*On Windows PowerShell:*
-```powershell
-cd backend
-.\mvnw.cmd test
+cd ml-service
+python evaluate.py
 ```
 
-All unit and integration tests compile and run with 0 errors and 0 failures.
+Results are written to `ml-service/reports/` (`eval_latest.json` and `confusion_matrix_latest.png`).
+
+## Tests
+
+```bash
+cd backend && ./mvnw test           # backend (Windows: .\mvnw.cmd test)
+cd ml-service && python -m pytest   # ML service
+cd frontend && npm run build        # frontend build check
+```
