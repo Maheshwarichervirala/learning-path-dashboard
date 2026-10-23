@@ -41,7 +41,7 @@ export default function ForgotPassword() {
           {submitted ? (
             <div className="text-center" style={{ padding: "16px 0" }}>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-                <CheckCircle2 size={48} color="#10b981" />
+                <CheckCircle2 size={48} color="var(--success)" />
               </div>
               <h2 style={{ fontSize: "1.25rem", marginBottom: "8px" }}>Check Your Inbox</h2>
               <p className="muted" style={{ fontSize: "0.9rem", lineHeight: 1.5, marginBottom: "24px" }}>

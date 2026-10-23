@@ -8,7 +8,7 @@ export function getXpLevel(points = 0) {
       next: 1500,
       needed: 0,
       pct: 100,
-      color: "#8b5cf6",
+      color: "var(--accent)",
     };
   }
   if (pts >= 700) {
@@ -19,7 +19,7 @@ export function getXpLevel(points = 0) {
       next: 1500,
       needed: 1500 - pts,
       pct: Math.min(100, Math.round(((pts - 700) / 800) * 100)),
-      color: "#3b82f6",
+      color: "var(--brand)",
     };
   }
   if (pts >= 300) {
@@ -30,7 +30,7 @@ export function getXpLevel(points = 0) {
       next: 700,
       needed: 700 - pts,
       pct: Math.min(100, Math.round(((pts - 300) / 400) * 100)),
-      color: "#10b981",
+      color: "var(--success)",
     };
   }
   if (pts >= 100) {
@@ -41,7 +41,7 @@ export function getXpLevel(points = 0) {
       next: 300,
       needed: 300 - pts,
       pct: Math.min(100, Math.round(((pts - 100) / 200) * 100)),
-      color: "#f59e0b",
+      color: "var(--warning)",
     };
   }
   return {
@@ -51,6 +51,6 @@ export function getXpLevel(points = 0) {
     next: 100,
     needed: 100 - pts,
     pct: Math.min(100, Math.round((pts / 100) * 100)),
-    color: "#6b7280",
+    color: "var(--text-muted)",
   };
 }

@@ -352,8 +352,8 @@ export default function Admin() {
       <div
         className="card"
         style={{
-          background: "linear-gradient(135deg, var(--bg-surface), var(--primary-light))",
-          borderColor: "var(--primary-border)",
+          background: "var(--glass-default)",
+          borderColor: "var(--border)",
           padding: "16px 20px",
           marginBottom: "24px",
         }}
@@ -506,7 +506,7 @@ export default function Admin() {
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
-                          style={{ color: "#ef4444" }}
+                          style={{ color: "var(--danger)" }}
                           onClick={() => handleDeleteSkill(s.id, s.name)}
                           disabled={deletingId === s.id}
                           title="Delete skill"
@@ -594,7 +594,7 @@ export default function Admin() {
                           <button
                             type="button"
                             className="btn btn-secondary btn-sm"
-                            style={{ color: "#ef4444" }}
+                            style={{ color: "var(--danger)" }}
                             onClick={() => handleDeleteQuestion(q.id)}
                             title="Delete question"
                           >
@@ -679,7 +679,7 @@ export default function Admin() {
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
-                          style={{ color: "#ef4444" }}
+                          style={{ color: "var(--danger)" }}
                           onClick={() => handleDeleteResource(r.id, r.title)}
                           title="Delete resource"
                         >

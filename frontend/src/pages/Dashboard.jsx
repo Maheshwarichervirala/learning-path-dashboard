@@ -138,8 +138,8 @@ export default function Dashboard() {
 
   // Dynamic chart colors for theme adaptation
   const isDark = theme === "dark";
-  const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
-  const textColor = isDark ? "#94a3b8" : "#64748b";
+  const gridColor = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(62, 92, 69, 0.12)";
+  const textColor = isDark ? "#A39E90" : "#6E655A";
 
   const chartOptions = {
     responsive: true,
@@ -203,7 +203,7 @@ export default function Dashboard() {
     }
     if (diff < 0) {
       return (
-        <span className="diff-down" style={{ color: "#ef4444", display: "inline-flex", gap: "2px", alignItems: "center", fontSize: "0.8rem" }}>
+        <span className="diff-down" style={{ color: "var(--danger)", display: "inline-flex", gap: "2px", alignItems: "center", fontSize: "0.8rem" }}>
           <ChevronDown size={14} /> {diff}{suffix}
         </span>
       );
@@ -255,13 +255,13 @@ export default function Dashboard() {
             style={{
               padding: "12px 18px",
               minWidth: "260px",
-              background: "linear-gradient(135deg, var(--bg-surface), var(--primary-light))",
-              borderColor: "var(--primary-border)",
+              background: "var(--glass-default)",
+              borderColor: "var(--glass-border)",
             }}
           >
             <div className="row between" style={{ marginBottom: "6px" }}>
               <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                Rank: <span style={{ color: "var(--primary)" }}>{xpInfo.level}</span>
+                Rank: <span style={{ color: "var(--brand)" }}>{xpInfo.level}</span>
               </span>
               <span className="badge-pill" style={{ fontSize: "0.75rem" }}>
                 {xpInfo.current} XP
@@ -270,8 +270,8 @@ export default function Dashboard() {
             <div
               style={{
                 height: "6px",
-                borderRadius: "999px",
-                background: "var(--bg-muted)",
+                borderRadius: "var(--radius-sm)",
+                background: "var(--glass-subtle)",
                 overflow: "hidden",
                 marginBottom: "4px",
               }}
@@ -280,9 +280,9 @@ export default function Dashboard() {
                 style={{
                   width: `${xpInfo.pct}%`,
                   height: "100%",
-                  background: "var(--primary)",
-                  borderRadius: "999px",
-                  transition: "width 0.3s ease",
+                  background: "var(--brand)",
+                  borderRadius: "var(--radius-sm)",
+                  transition: "width 250ms cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
               />
             </div>
@@ -319,40 +319,26 @@ export default function Dashboard() {
           <div className="row" style={{ alignItems: "center", gap: "16px" }}>
             <div style={{ position: "relative", width: "76px", height: "76px", flexShrink: 0 }}>
               <svg width="76" height="76" viewBox="0 0 90 90">
-                <defs>
-                  <linearGradient id="goalProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#818cf8" />
-                    <stop offset="100%" stopColor="#4f46e5" />
-                  </linearGradient>
-                  <linearGradient id="goalSuccessGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="100%" stopColor="#059669" />
-                  </linearGradient>
-                  <filter id="ringGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor={goal.met ? "rgba(16, 185, 129, 0.4)" : "rgba(99, 102, 241, 0.4)"} />
-                  </filter>
-                </defs>
                 <circle
                   cx="45"
                   cy="45"
                   r={ringRadius}
                   fill="none"
-                  stroke="var(--bg-muted)"
-                  strokeWidth="8"
+                  stroke="var(--glass-subtle)"
+                  strokeWidth="7"
                 />
                 <circle
                   cx="45"
                   cy="45"
                   r={ringRadius}
                   fill="none"
-                  stroke={goal.met ? "url(#goalSuccessGrad)" : "url(#goalProgressGrad)"}
-                  strokeWidth="8"
+                  stroke={goal.met ? "var(--success)" : "var(--brand)"}
+                  strokeWidth="7"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
-                  filter="url(#ringGlow)"
                   transform="rotate(-90 45 45)"
-                  style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)" }}
+                  style={{ transition: "stroke-dashoffset 250ms cubic-bezier(0.16, 1, 0.3, 1)" }}
                 />
               </svg>
               <div
@@ -553,8 +539,9 @@ export default function Dashboard() {
                   datasets: [
                     {
                       data: [done, left],
-                      backgroundColor: ["#10b981", isDark ? "#334155" : "#e2e8f0"],
-                      borderWidth: 0,
+                      backgroundColor: [isDark ? "#8FB08A" : "#3E5C45", isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(62, 92, 69, 0.15)"],
+                      borderColor: isDark ? "rgba(30, 34, 26, 0.8)" : "rgba(255, 252, 245, 0.8)",
+                      borderWidth: 2,
                     },
                   ],
                 }}
@@ -594,11 +581,14 @@ export default function Dashboard() {
                     {
                       label: "Score %",
                       data: sum.scoreTrend.map((p) => p.score),
-                      borderColor: "#3b82f6",
-                      backgroundColor: "rgba(59, 130, 246, 0.15)",
+                      borderColor: isDark ? "#8FB08A" : "#3E5C45",
+                      backgroundColor: isDark ? "rgba(143, 176, 138, 0.2)" : "rgba(62, 92, 69, 0.2)",
                       fill: true,
-                      tension: 0.35,
-                      pointBackgroundColor: "#3b82f6",
+                      borderWidth: 2,
+                      tension: 0.3,
+                      pointBackgroundColor: isDark ? "#8FB08A" : "#3E5C45",
+                      pointBorderColor: isDark ? "#12140F" : "#FFFFFF",
+                      pointBorderWidth: 1.5,
                       pointRadius: 4,
                     },
                   ],
@@ -634,9 +624,12 @@ export default function Dashboard() {
                     {
                       label: "Proficiency %",
                       data: steps.map((s) => s.proficiency),
-                      borderColor: "#8b5cf6",
-                      backgroundColor: "rgba(139, 92, 246, 0.2)",
-                      pointBackgroundColor: "#8b5cf6",
+                      borderColor: isDark ? "#E0A93B" : "#C98A1B",
+                      backgroundColor: isDark ? "rgba(224, 169, 59, 0.2)" : "rgba(201, 138, 27, 0.2)",
+                      borderWidth: 2,
+                      pointBackgroundColor: isDark ? "#E0A93B" : "#C98A1B",
+                      pointBorderColor: isDark ? "#12140F" : "#FFFFFF",
+                      pointBorderWidth: 1.5,
                       pointRadius: 3,
                     },
                   ],

@@ -68,20 +68,14 @@ function HistorySection({ history, skillName }) {
             role="img"
             aria-label="Score progression sparkline"
           >
-            <defs>
-              <linearGradient id="sparkline-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
             {chronological.length > 1 && (
               <>
-                <polygon points={areaPoints} fill="url(#sparkline-grad)" />
+                <polygon points={areaPoints} fill="var(--primary-light)" />
                 <polyline
                   points={pointsString}
                   fill="none"
-                  stroke="var(--primary)"
-                  strokeWidth="2.5"
+                  stroke="var(--brand)"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />

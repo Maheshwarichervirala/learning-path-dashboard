@@ -54,7 +54,7 @@ export default function ResetPassword() {
 
         <form className="card auth-form-card" onSubmit={submit}>
           {!token && (
-            <div className="notice-box" style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "8px", padding: "12px", marginBottom: "16px", color: "#ef4444", fontSize: "0.85rem" }}>
+            <div className="notice-box" style={{ background: "var(--danger-light)", border: "1px solid var(--danger-border)", borderRadius: "var(--radius-sm)", padding: "var(--space-3)", marginBottom: "var(--space-4)", color: "var(--danger)", fontSize: "var(--font-size-sm)" }}>
               Warning: Reset token is missing from the URL. Please verify your email link.
             </div>
           )}

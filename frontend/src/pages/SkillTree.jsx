@@ -281,30 +281,6 @@ export default function SkillTree() {
                 <circle cx="2" cy="2" r="1.2" fill="var(--border)" opacity="0.4" />
               </pattern>
 
-              {/* Edge Gradients */}
-              <linearGradient id="edge-in-path" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#818cf8" />
-                <stop offset="100%" stopColor="#4f46e5" />
-              </linearGradient>
-              <linearGradient id="edge-completed" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#34d399" />
-                <stop offset="100%" stopColor="#10b981" />
-              </linearGradient>
-
-              {/* Node Glow Filters */}
-              <filter id="node-glow-completed" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(16, 185, 129, 0.3)" />
-              </filter>
-              <filter id="node-glow-inpath" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(99, 102, 241, 0.35)" />
-              </filter>
-              <filter id="node-glow-available" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(99, 102, 241, 0.25)" />
-              </filter>
-              <filter id="node-glow-selected" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="rgba(99, 102, 241, 0.6)" />
-              </filter>
-
               {/* Arrow Markers */}
               <marker
                 id="arrow-default"
@@ -326,7 +302,7 @@ export default function SkillTree() {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5" />
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--brand)" />
               </marker>
               <marker
                 id="arrow-completed"
@@ -337,7 +313,7 @@ export default function SkillTree() {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--success)" />
               </marker>
             </defs>
 
@@ -356,14 +332,14 @@ export default function SkillTree() {
                   fill="none"
                   stroke={
                     isComp
-                      ? "url(#edge-completed)"
+                      ? "var(--success)"
                       : isInPath
-                      ? "url(#edge-in-path)"
+                      ? "var(--brand)"
                       : "var(--border)"
                   }
-                  strokeWidth={isComp || isInPath ? 3 : 1.75}
+                  strokeWidth={isComp || isInPath ? 2.5 : 1.5}
                   strokeLinecap="round"
-                  strokeDasharray={edge.state === "locked" ? "5,5" : "none"}
+                  strokeDasharray={edge.state === "locked" ? "4,4" : "none"}
                   markerEnd={
                     isComp
                       ? "url(#arrow-completed)"
@@ -373,8 +349,7 @@ export default function SkillTree() {
                   }
                   style={{
                     opacity: edge.state === "locked" ? 0.45 : 0.95,
-                    filter: isComp || isInPath ? "drop-shadow(0 2px 4px rgba(99, 102, 241, 0.25))" : "none",
-                    transition: "all 0.3s ease",
+                    transition: "all 0.25s ease",
                   }}
                 />
               );
@@ -388,27 +363,23 @@ export default function SkillTree() {
               const prof = step ? Math.round(step.proficiency) : 0;
 
               let strokeColor = "var(--glass-border)";
-              let bgColor = "var(--bg-card)";
+              let bgColor = "var(--glass-default)";
               let textColor = "var(--text-primary)";
-              let filter = "none";
 
               if (isSelected) {
-                strokeColor = "var(--primary)";
-                filter = "url(#node-glow-selected)";
+                strokeColor = "var(--accent)";
+                bgColor = "var(--bg-surface-hover)";
               } else if (state === "completed") {
-                strokeColor = "var(--success)";
-                bgColor = "var(--bg-surface)";
-                filter = "url(#node-glow-completed)";
+                strokeColor = "var(--brand)";
+                bgColor = "var(--primary-light)";
               } else if (state === "in_path") {
-                strokeColor = "var(--primary)";
-                bgColor = "var(--bg-surface)";
-                filter = "url(#node-glow-inpath)";
+                strokeColor = "var(--accent)";
+                bgColor = "var(--accent-light)";
               } else if (state === "available") {
-                strokeColor = "rgba(99, 102, 241, 0.6)";
-                bgColor = "var(--bg-surface)";
-                filter = "url(#node-glow-available)";
+                strokeColor = "var(--brand)";
+                bgColor = "var(--glass-default)";
               } else if (state === "locked") {
-                strokeColor = "var(--border-subtle)";
+                strokeColor = "var(--info)";
                 bgColor = "var(--bg-muted)";
                 textColor = "var(--text-muted)";
               }
@@ -417,27 +388,27 @@ export default function SkillTree() {
                 state === "completed"
                   ? "Completed"
                   : state === "in_path"
-                  ? "In Path"
+                  ? "In Progress"
                   : state === "locked"
                   ? "Locked"
-                  : "Ready";
+                  : "Available";
 
               const badgeBg =
                 state === "completed"
                   ? "var(--success-light)"
                   : state === "in_path"
-                  ? "var(--primary-light)"
+                  ? "var(--accent-light)"
                   : state === "available"
-                  ? "rgba(99, 102, 241, 0.15)"
+                  ? "var(--primary-light)"
                   : "var(--bg-muted)";
 
               const badgeColor =
                 state === "completed"
                   ? "var(--success)"
                   : state === "in_path"
-                  ? "var(--primary)"
+                  ? "var(--accent)"
                   : state === "available"
-                  ? "var(--primary)"
+                  ? "var(--brand)"
                   : "var(--text-muted)";
 
               return (
@@ -460,10 +431,9 @@ export default function SkillTree() {
                     ry="14"
                     fill={bgColor}
                     stroke={strokeColor}
-                    strokeWidth={isSelected ? 2.5 : 1.5}
+                    strokeWidth={isSelected ? 2 : 1}
                     style={{
-                      filter,
-                      transition: "all 0.25s ease",
+                      transition: "all 0.2s ease",
                     }}
                   />
 
@@ -613,7 +583,7 @@ export default function SkillTree() {
                     ✓ (Satisfied)
                   </span>
                 ) : (
-                  <span style={{ color: "#ef4444", marginLeft: "6px" }}>
+                  <span style={{ color: "var(--danger)", marginLeft: "6px" }}>
                     (Not yet mastered)
                   </span>
                 )}
