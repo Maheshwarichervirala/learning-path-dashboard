@@ -24,18 +24,27 @@ def make_training_data(n=3000, seed=42):
     return X, y
 
 
-def train_level_model():
-    X, y = make_training_data()
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+def train_candidate_level_model(n_estimators=100, random_state=42):
+    X, y = make_training_data(seed=random_state)
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=random_state, stratify=y)
+    model = RandomForestClassifier(n_estimators=n_estimators, random_state=random_state)
     model.fit(X_tr, y_tr)
     pred = model.predict(X_te)
     metrics = {
-        "accuracy": round(float(accuracy_score(y_te, pred)), 3),
-        "f1_macro": round(float(f1_score(y_te, pred, average="macro")), 3),
-        "cv_accuracy": round(float(cross_val_score(model, X, y, cv=5).mean()), 3),
+        "accuracy": round(float(accuracy_score(y_te, pred)), 4),
+        "f1_macro": round(float(f1_score(y_te, pred, average="macro")), 4),
+        "cv_accuracy": round(float(cross_val_score(model, X, y, cv=5).mean()), 4),
     }
+    return model, metrics
+
+
+def save_level_model(model):
     joblib.dump(model, MODEL_PATH)
+
+
+def train_level_model():
+    model, metrics = train_candidate_level_model()
+    save_level_model(model)
     return model, metrics
 
 

@@ -5,6 +5,7 @@ import com.learning.backend.entity.Question;
 import com.learning.backend.entity.Resource;
 import com.learning.backend.entity.Skill;
 import com.learning.backend.service.AdminService;
+import com.learning.backend.service.MlClient;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminController {
     private final AdminService admin;
+    private final MlClient mlClient;
 
     // Skills
     @GetMapping("/skills")
@@ -82,5 +84,16 @@ public class AdminController {
     public Map<String, String> deleteResource(@PathVariable Long id) {
         admin.deleteResource(id);
         return Map.of("message", "Resource deleted successfully");
+    }
+
+    // ML Metrics & Retraining
+    @GetMapping("/ml/metrics")
+    public Map<String, Object> getMlMetrics() {
+        return mlClient.getLatestMetrics().orElse(Map.of("status", "unavailable", "message", "ML service unavailable"));
+    }
+
+    @PostMapping("/ml/retrain")
+    public Map<String, Object> retrainMl(@RequestBody(required = false) Map<String, Object> req) {
+        return mlClient.retrain(req).orElse(Map.of("status", "error", "message", "ML service unavailable"));
     }
 }

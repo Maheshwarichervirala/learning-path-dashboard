@@ -1,0 +1,91 @@
+{
+  "evaluation_timestamp": "2026-10-23T10:41:09.303498+00:00",
+  "phase": "PHASE 1: EVALUATION",
+  "dataset": {
+    "source": "synthetic",
+    "is_synthetic": true,
+    "disclaimer": "All training and evaluation data is synthetic."
+  },
+  "level_classifier": {
+    "dataset_type": "synthetic",
+    "sample_size": 3000,
+    "class_imbalance": {
+      "Beginner": {
+        "count": 1209,
+        "percentage": 40.3
+      },
+      "Intermediate": {
+        "count": 1034,
+        "percentage": 34.47
+      },
+      "Advanced": {
+        "count": 757,
+        "percentage": 25.23
+      }
+    },
+    "feature_correlations_with_target": {
+      "avg_score": 0.925,
+      "last_score": 0.878,
+      "quizzes_taken": 0.008
+    },
+    "leakage_assessment": "WARNING: The dataset is 100% SYNTHETIC (3,000 generated records). Labels were constructed directly from avg_score with Gaussian noise (noisy = avg + normal(0, 5)). Consequently, there is inherent label leakage (correlation = 0.925). While the Random Forest reports high accuracy (90.7%), these metrics reflect synthetic generator rules rather than authentic human learning progress. Real learner logs are required before trusting in production.",
+    "majority_class_baseline": {
+      "accuracy": 0.4033,
+      "macro_precision": 0.1344,
+      "macro_recall": 0.3333,
+      "macro_f1": 0.1916
+    },
+    "rule_based_baseline": {
+      "accuracy": 0.9183,
+      "macro_precision": 0.915,
+      "macro_recall": 0.9178,
+      "macro_f1": 0.9163
+    },
+    "random_forest": {
+      "accuracy": 0.9067,
+      "macro_precision": 0.9014,
+      "macro_recall": 0.9079,
+      "macro_f1": 0.9041
+    },
+    "cross_validation_5fold": {
+      "cv_accuracy_mean": 0.907,
+      "cv_accuracy_std": 0.0019,
+      "cv_f1_macro_mean": 0.9053,
+      "cv_f1_macro_std": 0.0021
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Beginner",
+        "Intermediate",
+        "Advanced"
+      ],
+      "matrix": [
+        [
+          227,
+          15,
+          0
+        ],
+        [
+          11,
+          175,
+          21
+        ],
+        [
+          0,
+          9,
+          142
+        ]
+      ]
+    },
+    "confusion_matrix_file": "confusion_matrix_20261023_104108.png"
+  },
+  "recommender": {
+    "dataset_type": "synthetic",
+    "num_users_evaluated": 40,
+    "k": 5,
+    "precision_at_5": 0.255,
+    "recall_at_5": 0.4875,
+    "ndcg_at_5": 0.4112,
+    "assessment": "Offline recommender evaluation computed on seeded synthetic interaction profiles. Recommender balances content-based tag similarity and rating."
+  }
+}

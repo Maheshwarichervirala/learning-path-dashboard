@@ -71,4 +71,30 @@ public class MlClient {
             return Optional.empty();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public Optional<Map<String, Object>> getLatestMetrics() {
+        try {
+            Map<String, Object> res = rest.get().uri("/metrics/latest")
+                    .retrieve().body(Map.class);
+            return Optional.ofNullable(res);
+        } catch (Exception e) {
+            log.warn("ML service unavailable, cannot fetch metrics: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Optional<Map<String, Object>> retrain(Map<String, Object> req) {
+        try {
+            Map<String, Object> res = rest.post().uri("/retrain")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(req != null ? req : Map.of())
+                    .retrieve().body(Map.class);
+            return Optional.ofNullable(res);
+        } catch (Exception e) {
+            log.warn("ML service unavailable, cannot trigger retrain: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
 }

@@ -16,6 +16,7 @@ import {
   Cpu,
   Layers,
   Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import api, { errMsg } from "../api";
 import { useAuth } from "../AuthContext";
@@ -25,11 +26,17 @@ export default function Admin() {
   const { user, isAdmin } = useAuth();
   const toast = useToast();
 
-  const [activeTab, setActiveTab] = useState("skills"); // 'skills' | 'questions' | 'resources'
+  const [activeTab, setActiveTab] = useState("skills"); // 'skills' | 'questions' | 'resources' | 'metrics'
   const [skills, setSkills] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ML evaluation & retrain state
+  const [mlMetrics, setMlMetrics] = useState(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [retraining, setRetraining] = useState(false);
+  const [retrainResult, setRetrainResult] = useState(null);
 
   // Search queries per tab
   const [skillSearch, setSkillSearch] = useState("");
@@ -84,9 +91,48 @@ export default function Admin() {
     }
   };
 
+  const loadMetrics = async () => {
+    try {
+      setLoadingMetrics(true);
+      const res = await api.get("/admin/ml/metrics");
+      setMlMetrics(res.data);
+    } catch (e) {
+      console.warn("Could not load ML metrics", e);
+    } finally {
+      setLoadingMetrics(false);
+    }
+  };
+
+  const handleRetrain = async () => {
+    if (
+      !window.confirm(
+        "Retrain the ML model? Evaluation will run automatically and will reject replacement if candidate model macro F1 drops by more than 2 percentage points."
+      )
+    ) {
+      return;
+    }
+    try {
+      setRetraining(true);
+      setRetrainResult(null);
+      const res = await api.post("/admin/ml/retrain");
+      setRetrainResult(res.data);
+      if (res.data?.replaced) {
+        toast.success(res.data.message || "Model retrained and deployed successfully!");
+        loadMetrics();
+      } else {
+        toast.error(res.data?.reason || "Retraining rejected: performance dropped by > 2 points.");
+      }
+    } catch (err) {
+      toast.error(errMsg(err));
+    } finally {
+      setRetraining(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       loadData();
+      loadMetrics();
     }
   }, [isAdmin]);
 
@@ -423,6 +469,20 @@ export default function Admin() {
           <span>Resources</span>
           <span className="resource-tab-count">{resources.length}</span>
         </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "metrics"}
+          className={`resource-tab ${activeTab === "metrics" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("metrics");
+            if (!mlMetrics) loadMetrics();
+          }}
+        >
+          <Cpu size={16} />
+          <span>Model Metrics</span>
+        </button>
       </div>
 
       {/* --- TAB 1: SKILLS --- */}
@@ -694,6 +754,318 @@ export default function Admin() {
           </div>
         </div>
       )}
+
+      {/* --- TAB 4: MODEL METRICS --- */}
+      {activeTab === "metrics" && (
+        <div className="admin-tab-content">
+          <div className="card" style={{ padding: "24px", marginBottom: "20px" }}>
+            <div className="row between wrap" style={{ gap: "16px", marginBottom: "20px", alignItems: "center" }}>
+              <div>
+                <div className="row" style={{ gap: "10px", alignItems: "center" }}>
+                  <Cpu size={24} className="text-primary" />
+                  <h2 style={{ margin: 0 }}>Model Evaluation Metrics</h2>
+                  <span className="chip chip-completed" style={{ fontSize: "0.75rem" }}>
+                    Live Model
+                  </span>
+                </div>
+                <p className="muted" style={{ margin: "4px 0 0 0", fontSize: "0.85rem" }}>
+                  Stratified 80/20 train/test evaluation, 5-fold cross validation, and baseline comparisons.
+                  {mlMetrics?.evaluation_timestamp && (
+                    <span> • Evaluated {new Date(mlMetrics.evaluation_timestamp).toLocaleString()}</span>
+                  )}
+                </p>
+              </div>
+
+              <div className="row" style={{ gap: "10px" }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={loadMetrics}
+                  disabled={loadingMetrics}
+                  title="Refresh latest metrics from service"
+                >
+                  <RefreshCw size={14} className={loadingMetrics ? "spin" : ""} />
+                  <span>Refresh</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={handleRetrain}
+                  disabled={retraining}
+                  title="Retrain model with evaluation guardrail"
+                >
+                  <Sparkles size={14} className={retraining ? "spin" : ""} />
+                  <span>{retraining ? "Evaluating & Training..." : "Retrain Model"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Retrain Result Alert */}
+            {retrainResult && (
+              <div
+                className="card"
+                style={{
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  borderColor: retrainResult.replaced ? "var(--success)" : "var(--danger)",
+                  background: "var(--bg-surface)",
+                }}
+              >
+                <div className="row" style={{ gap: "10px", alignItems: "center" }}>
+                  {retrainResult.replaced ? (
+                    <Check size={18} style={{ color: "var(--success)", flexShrink: 0 }} />
+                  ) : (
+                    <AlertTriangle size={18} style={{ color: "var(--danger)", flexShrink: 0 }} />
+                  )}
+                  <div>
+                    <strong style={{ color: retrainResult.replaced ? "var(--success)" : "var(--danger)", fontSize: "0.9rem" }}>
+                      {retrainResult.replaced ? "Retrain Accepted & Live Model Replaced" : "Retrain Rejected by Guardrail"}
+                    </strong>
+                    <p style={{ margin: "2px 0 0 0", fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                      {retrainResult.message || retrainResult.reason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Disclaimer & Leakage Callout */}
+            <div
+              className="card"
+              style={{
+                background: "var(--glass-default)",
+                borderColor: "var(--border)",
+                padding: "14px 18px",
+                marginBottom: "24px",
+              }}
+            >
+              <div className="row" style={{ gap: "10px", alignItems: "flex-start" }}>
+                <AlertTriangle size={18} className="text-primary" style={{ flexShrink: 0, marginTop: "2px" }} />
+                <div>
+                  <div className="row" style={{ gap: "8px", alignItems: "center", marginBottom: "4px" }}>
+                    <strong style={{ fontSize: "0.88rem" }}>Synthetic Data & Label Leakage Disclosure</strong>
+                    <span className="chip" style={{ fontSize: "0.7rem", color: "var(--primary)" }}>
+                      Synthetic: 100%
+                    </span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {mlMetrics?.level_classifier?.leakage_assessment ||
+                      "Dataset is 100% synthetically generated (3,000 samples). Labels were synthesized from avg_score with Gaussian noise, producing high correlation. Do not trust these metrics for production decisions until real learner logs are accumulated."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {loadingMetrics && !mlMetrics ? (
+              <div style={{ textAlign: "center", padding: "40px" }} className="muted">
+                Loading ML evaluation metrics...
+              </div>
+            ) : mlMetrics?.level_classifier ? (
+              <>
+                {/* 4 Cards Grid */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                    gap: "16px",
+                    marginBottom: "24px",
+                  }}
+                >
+                  {/* Card 1: Random Forest Classifier */}
+                  <div className="card" style={{ padding: "18px", background: "var(--bg-surface)" }}>
+                    <span className="muted" style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Classifier Performance
+                    </span>
+                    <h3 style={{ margin: "6px 0 12px 0", fontSize: "1.1rem" }}>Random Forest (Live)</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.85rem" }}>
+                      <div className="row between">
+                        <span className="muted">Accuracy (80/20 test):</span>
+                        <strong>{((mlMetrics.level_classifier.random_forest?.accuracy || 0) * 100).toFixed(1)}%</strong>
+                      </div>
+                      <div className="row between">
+                        <span className="muted">Macro F1:</span>
+                        <strong>{((mlMetrics.level_classifier.random_forest?.macro_f1 || 0) * 100).toFixed(1)}%</strong>
+                      </div>
+                      <div className="row between">
+                        <span className="muted">Macro Precision:</span>
+                        <span>{((mlMetrics.level_classifier.random_forest?.macro_precision || 0) * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="row between">
+                        <span className="muted">Macro Recall:</span>
+                        <span>{((mlMetrics.level_classifier.random_forest?.macro_recall || 0) * 100).toFixed(1)}%</span>
+                      </div>
+                      <div className="row between" style={{ borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                        <span className="muted">5-Fold Stratified CV:</span>
+                        <strong style={{ color: "var(--primary)" }}>
+                          {((mlMetrics.level_classifier.cross_validation_5fold?.cv_accuracy_mean || 0) * 100).toFixed(1)}% ±
+                          {" "}{((mlMetrics.level_classifier.cross_validation_5fold?.cv_accuracy_std || 0) * 100).toFixed(2)}%
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Baseline Comparison */}
+                  <div className="card" style={{ padding: "18px", background: "var(--bg-surface)" }}>
+                    <span className="muted" style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Benchmark Baselines
+                    </span>
+                    <h3 style={{ margin: "6px 0 12px 0", fontSize: "1.1rem" }}>Baseline Models</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.85rem" }}>
+                      <div style={{ padding: "8px 10px", background: "var(--glass-default)", borderRadius: "var(--radius-sm)" }}>
+                        <div className="row between">
+                          <strong>Majority Class Baseline</strong>
+                          <span>{((mlMetrics.level_classifier.majority_class_baseline?.accuracy || 0) * 100).toFixed(1)}%</span>
+                        </div>
+                        <span className="muted" style={{ fontSize: "0.75rem" }}>
+                          Macro F1: {((mlMetrics.level_classifier.majority_class_baseline?.macro_f1 || 0) * 100).toFixed(1)}% (Always predicts Beginner)
+                        </span>
+                      </div>
+
+                      <div style={{ padding: "8px 10px", background: "var(--glass-default)", borderRadius: "var(--radius-sm)" }}>
+                        <div className="row between">
+                          <strong>Simple Rule-Based Predictor</strong>
+                          <span>{((mlMetrics.level_classifier.rule_based_baseline?.accuracy || 0) * 100).toFixed(1)}%</span>
+                        </div>
+                        <span className="muted" style={{ fontSize: "0.75rem" }}>
+                          Macro F1: {((mlMetrics.level_classifier.rule_based_baseline?.macro_f1 || 0) * 100).toFixed(1)}% (Threshold: &lt;40, &lt;75, &ge;75)
+                        </span>
+                      </div>
+
+                      <div className="row between" style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                        <span>RF Lift vs Majority:</span>
+                        <strong style={{ color: "var(--success)" }}>
+                          +{(((mlMetrics.level_classifier.random_forest?.accuracy || 0) - (mlMetrics.level_classifier.majority_class_baseline?.accuracy || 0)) * 100).toFixed(1)}%
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Recommender Evaluation */}
+                  <div className="card" style={{ padding: "18px", background: "var(--bg-surface)" }}>
+                    <span className="muted" style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Recommendation Quality
+                    </span>
+                    <h3 style={{ margin: "6px 0 12px 0", fontSize: "1.1rem" }}>Recommender (Top-5)</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.85rem" }}>
+                      <div className="row between">
+                        <span className="muted">Precision@5:</span>
+                        <strong style={{ color: "var(--primary)" }}>
+                          {((mlMetrics.recommender?.precision_at_5 || 0) * 100).toFixed(1)}%
+                        </strong>
+                      </div>
+                      <div className="row between">
+                        <span className="muted">Recall@5:</span>
+                        <strong>{((mlMetrics.recommender?.recall_at_5 || 0) * 100).toFixed(1)}%</strong>
+                      </div>
+                      <div className="row between">
+                        <span className="muted">NDCG@5:</span>
+                        <strong>{((mlMetrics.recommender?.ndcg_at_5 || 0) * 100).toFixed(1)}%</strong>
+                      </div>
+                      <div className="row between" style={{ borderTop: "1px solid var(--border)", paddingTop: "8px" }}>
+                        <span className="muted">Evaluation Profiles:</span>
+                        <span>{mlMetrics.recommender?.num_users_evaluated || 0} synthetic users</span>
+                      </div>
+                      <span className="muted" style={{ fontSize: "0.75rem", fontStyle: "italic" }}>
+                        Offline ranking across 28 items
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Class Imbalance & Feature Correlations */}
+                  <div className="card" style={{ padding: "18px", background: "var(--bg-surface)" }}>
+                    <span className="muted" style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Dataset Distributions
+                    </span>
+                    <h3 style={{ margin: "6px 0 12px 0", fontSize: "1.1rem" }}>Classes & Correlations</h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "0.82rem" }}>
+                      <div className="row between">
+                        <span>Beginner:</span>
+                        <span className="chip" style={{ fontSize: "0.72rem" }}>
+                          {mlMetrics.level_classifier.class_imbalance?.Beginner?.count} ({mlMetrics.level_classifier.class_imbalance?.Beginner?.percentage}%)
+                        </span>
+                      </div>
+                      <div className="row between">
+                        <span>Intermediate:</span>
+                        <span className="chip" style={{ fontSize: "0.72rem" }}>
+                          {mlMetrics.level_classifier.class_imbalance?.Intermediate?.count} ({mlMetrics.level_classifier.class_imbalance?.Intermediate?.percentage}%)
+                        </span>
+                      </div>
+                      <div className="row between">
+                        <span>Advanced:</span>
+                        <span className="chip" style={{ fontSize: "0.72rem" }}>
+                          {mlMetrics.level_classifier.class_imbalance?.Advanced?.count} ({mlMetrics.level_classifier.class_imbalance?.Advanced?.percentage}%)
+                        </span>
+                      </div>
+                      <div style={{ borderTop: "1px solid var(--border)", marginTop: "4px", paddingTop: "4px" }}>
+                        <span className="muted" style={{ fontSize: "0.75rem", display: "block", marginBottom: "2px" }}>
+                          Target Correlations (Leakage indicator):
+                        </span>
+                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", fontSize: "0.75rem" }}>
+                          <span>avg: <strong>{mlMetrics.level_classifier.feature_correlations_with_target?.avg_score}</strong></span>
+                          <span>last: <strong>{mlMetrics.level_classifier.feature_correlations_with_target?.last_score}</strong></span>
+                          <span>quizzes: <strong>{mlMetrics.level_classifier.feature_correlations_with_target?.quizzes_taken}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Confusion Matrix Section */}
+                <div className="card" style={{ padding: "20px", background: "var(--bg-surface)" }}>
+                  <h3 style={{ margin: "0 0 14px 0", fontSize: "1rem" }}>
+                    Confusion Matrix (Test Set: {mlMetrics.level_classifier.sample_size * 0.2} samples)
+                  </h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table className="admin-table" style={{ textAlign: "center" }}>
+                      <thead>
+                        <tr>
+                          <th style={{ textAlign: "left" }}>Actual \ Predicted</th>
+                          {mlMetrics.level_classifier.confusion_matrix?.labels?.map((label) => (
+                            <th key={label} style={{ textAlign: "center" }}>
+                              Pred {label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mlMetrics.level_classifier.confusion_matrix?.matrix?.map((row, rIdx) => {
+                          const actualLabel = mlMetrics.level_classifier.confusion_matrix.labels[rIdx];
+                          return (
+                            <tr key={rIdx}>
+                              <td style={{ textAlign: "left", fontWeight: "bold" }}>True {actualLabel}</td>
+                              {row.map((cell, cIdx) => (
+                                <td key={cIdx}>
+                                  <span
+                                    className={`chip ${rIdx === cIdx ? "chip-completed" : ""}`}
+                                    style={{
+                                      fontSize: "0.85rem",
+                                      fontWeight: rIdx === cIdx ? "bold" : "normal",
+                                    }}
+                                  >
+                                    {cell}
+                                  </span>
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="card" style={{ padding: "20px", textAlign: "center" }}>
+                <p className="muted">ML Service metrics currently unavailable.</p>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={loadMetrics}>
+                  Retry Connection
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* --- SKILL MODAL --- */}
       {skillModalOpen && (
